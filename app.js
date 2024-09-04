@@ -1,5 +1,7 @@
-const http = require('http');
+require('./src/config/configDatabase')
 
+
+const http = require('http');
 const hostname = 'localhost';
 const port = 3000;
 
