@@ -126,6 +126,37 @@ class UserController {
         }
     }
 
+    static async destroy(req,res) {
+        try {
+
+            const idUser = req.params.id
+
+            if(idUser == null) {
+                return jsonResponse.errorResponse(
+                    res,
+                    400,
+                    "Validation error",
+                    "Id is required"
+                )
+            }
+
+            await userService.destroy(idUser)
+
+            return jsonResponse.successResponse(
+                res,
+                200,
+                "User has been deleted"
+            )
+
+        } catch(error) {
+            jsonResponse.errorResponse(
+                res,
+                500,
+                error.message
+            )
+        }
+    }
+
 }
 
 module.exports = UserController

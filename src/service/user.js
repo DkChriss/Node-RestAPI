@@ -49,6 +49,17 @@ class UserService {
         return await currentUser.update(user)
 
     }
+
+    static async destroy(id) {
+        const user = await User.findByPk(id)
+
+        if(!user) {
+            throw new Error("User not found")
+        }
+
+        await user.destroy()
+        
+    }
 }
 
 module.exports = UserService
