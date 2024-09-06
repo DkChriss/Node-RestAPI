@@ -38,6 +38,17 @@ class UserService {
         return user;
     }
 
+    static async update(id, user) {
+        
+        const currentUser = await User.findByPk(id);
+
+        if(!currentUser) {
+            throw new Error("User not found")
+        }
+
+        return await currentUser.update(user)
+
+    }
 }
 
 module.exports = UserService
