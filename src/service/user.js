@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs")
 const { User } = require("../models");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 
 class UserService {
 
@@ -28,6 +28,15 @@ class UserService {
         
     }
 
+    static async show(id) {
+        const user = await User.findByPk(id);
+        
+        if(!user) {
+            throw new Error("User not found")
+        }
+        
+        return user;
+    }
 
 }
 

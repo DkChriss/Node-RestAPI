@@ -1,6 +1,7 @@
 const joi = require("joi")
 
 const userSchema = joi.object({
+    id: joi.number(),
     username: joi.string().required(),
     password: joi.string().required(),
     email: joi.string().email().required(),
@@ -8,7 +9,8 @@ const userSchema = joi.object({
 })
 
 class UserDTO {
-    constructor({username,password,email,name}) {
+    constructor({id,username,password,email,name}) {
+        this.id = id
         this.username = username
         this.password = password
         this.email = email
