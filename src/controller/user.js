@@ -2,7 +2,6 @@ const userDTO = require("../http/request/UserDTO")
 const userService = require("../service/user")
 const jsonResponse = require("../http/response/jsonResponse")
 const UserDTO = require("../http/request/UserDTO")
-const Joi = require('joi')
 
 class UserController {
 
