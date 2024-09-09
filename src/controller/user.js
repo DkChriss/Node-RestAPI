@@ -2,25 +2,15 @@ const userDTO = require("../http/request/UserDTO")
 const userService = require("../service/user")
 const jsonResponse = require("../http/response/jsonResponse")
 const UserDTO = require("../http/request/UserDTO")
+const Joi = require('joi')
 
 class UserController {
 
     static async store (req,res) {
+        
         try {
-            const {error} = userDTO.validate(req.body)
-    
-            if(error) {
-                return jsonResponse.validationResponse(
-                    res, 
-                    400, 
-                    "Validation Error", 
-                    error.details[0].message
-                )
-            }
-    
-            const newUserDTO = new userDTO(req.body)
-            
-            const newUser = await userService.store(newUserDTO);
+
+            const newUser = await userService.store(req.body);
     
             jsonResponse.successResponse(
                 res,

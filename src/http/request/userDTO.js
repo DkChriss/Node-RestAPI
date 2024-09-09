@@ -1,25 +1,26 @@
 const joi = require("joi")
+const { User } = require("../../models");
 
-const userSchema = joi.object({
+
+const userDTO = joi.object({
     id: joi.number(),
-    username: joi.string().required(),
+    username: joi.string().required().external(
+        async (username) => {
+            const existsUser = await User.findOne({where: {username: username}})
+            if(existsUser) {
+                throw new Error("Username is already taken")
+            }
+        }),
     password: joi.string().required(),
-    email: joi.string().email().required(),
+    email: joi.string().email().required().external(
+        async (email) => {
+            const existsUser = await User.findOne({where: {email: email}})
+            if(existsUser) {
+                throw new Error("Email is already taken")
+            }
+        }
+    ),
     name: joi.string().required()
 })
 
-class UserDTO {
-    constructor({id,username,password,email,name}) {
-        this.id = id
-        this.username = username
-        this.password = password
-        this.email = email
-        this.name = name
-    }
-
-    static validate(data) {
-        return userSchema.validate(data)
-    }
-}
-
-module.exports = UserDTO
+module.exports = userDTO
