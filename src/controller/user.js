@@ -1,38 +1,50 @@
 const userDTO = require("../http/request/UserDTO")
 const userService = require("../service/user")
 const jsonResponse = require("../http/response/jsonResponse")
-const UserDTO = require("../http/request/UserDTO")
+const UserDTO = require("../http/request/UserDTO");
+const Joi = require("joi");
 
 class UserController {
 
-    static async store (req,res) {
-        
+    static async store(req, res) {
+
         try {
 
             const newUser = await userService.store(req.body);
-    
+
             jsonResponse.successResponse(
                 res,
                 201,
                 "User registered successfully",
                 newUser
             )
-    
+
         } catch (error) {
-            jsonResponse.errorResponse(
-                res,
-                500,
-                error.message
-            )
+            if (Joi.isError(error)) {
+                console.log(error)
+                jsonResponse.validationResponse(
+                    res,
+                    400,
+                    "Validation error",
+                    error.details.map(err => err.message)
+                )
+
+            } else {
+                jsonResponse.errorResponse(
+                    res,
+                    500,
+                    error.message
+                )
+            }
         }
     }
 
-    static async show(req,res) {
+    static async show(req, res) {
         try {
 
             const idUser = req.params.id;
-            
-            if(idUser == null) {
+
+            if (idUser == null) {
                 return jsonResponse.errorResponse(
                     res,
                     400,
@@ -40,8 +52,8 @@ class UserController {
                     "Id is required"
                 )
             }
-    
-            const {id, username, name, email} = await userService.show(idUser)
+
+            const { id, username, name, email } = await userService.show(idUser)
 
             const user = new UserDTO({
                 id,
@@ -64,24 +76,24 @@ class UserController {
             )
         }
     }
-    
-    static async update(req,res){
+
+    static async update(req, res) {
         try {
 
             const idUser = req.params.id
 
-            const {error} = userDTO.validate(req.body)
-    
-            if(error) {
+            const { error } = userDTO.validate(req.body)
+
+            if (error) {
                 return jsonResponse.validationResponse(
-                    res, 
-                    400, 
-                    "Validation Error", 
+                    res,
+                    400,
+                    "Validation Error",
                     error.details[0].message
                 )
             }
 
-            if(idUser == null) {
+            if (idUser == null) {
                 return jsonResponse.errorResponse(
                     res,
                     400,
@@ -90,7 +102,7 @@ class UserController {
                 )
             }
 
-            const {id, username, name, email} = await userService.update(idUser, new UserDTO(req.body))
+            const { id, username, name, email } = await userService.update(idUser, new UserDTO(req.body))
 
             const user = new UserDTO({
                 id,
@@ -106,7 +118,7 @@ class UserController {
                 user
             )
 
-        } catch(error) {
+        } catch (error) {
             jsonResponse.errorResponse(
                 res,
                 500,
@@ -115,12 +127,12 @@ class UserController {
         }
     }
 
-    static async destroy(req,res) {
+    static async destroy(req, res) {
         try {
 
             const idUser = req.params.id
 
-            if(idUser == null) {
+            if (idUser == null) {
                 return jsonResponse.errorResponse(
                     res,
                     400,
@@ -137,7 +149,7 @@ class UserController {
                 "User has been deleted"
             )
 
-        } catch(error) {
+        } catch (error) {
             jsonResponse.errorResponse(
                 res,
                 500,
