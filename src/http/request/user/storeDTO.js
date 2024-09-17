@@ -1,8 +1,8 @@
-const joi = require("joi")
+const Joi = require("joi")
 const { User } = require("../../../models");
 
-const userDTO = joi.object({
-    username: joi.string().required().external(
+const userDTO = Joi.object({
+    username: Joi.string().required().external(
         async (username) => {
             const existsUsername = await User.findOne({ where: { username: username } })
             if (existsUsername) {
@@ -14,8 +14,8 @@ const userDTO = joi.object({
                 }], username);
             }
         }),
-    password: joi.string().required(),
-    email: joi.string().email().required().external(
+    password: Joi.string().required(),
+    email: Joi.string().email().required().external(
         async (email) => {
             const existsEmail = await User.findOne({ where: { email: email } })
             if (existsEmail) {
@@ -28,7 +28,7 @@ const userDTO = joi.object({
             }
         }
     ),
-    name: joi.string().required()
+    name: Joi.string().required()
 })
 
 module.exports = userDTO

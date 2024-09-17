@@ -1,7 +1,6 @@
-const userDTO = require("../http/request/user/storeDTO")
 const userService = require("../service/user")
 const jsonResponse = require("../http/response/jsonResponse")
-const UserDTO = require("../http/request/user/storeDTO");
+const UserDTO = require("../http/request/user/responseDTO")
 const Joi = require("joi");
 
 class UserController {
@@ -10,8 +9,8 @@ class UserController {
 
         try {
 
-            const newUser = await userService.store(req.body);
-
+            const { id, name, username, email } = await userService.store(req.body);
+            const newUser = new UserDTO(id, name, username, email)
             return jsonResponse.successResponse(
                 res,
                 201,
@@ -39,12 +38,7 @@ class UserController {
 
             const { id, username, name, email } = await userService.show(req.params.id)
 
-            const user = new UserDTO({
-                id,
-                username,
-                name,
-                email
-            })
+            const user = new UserDTO(id, username, name, email)
 
             return jsonResponse.successResponse(
                 res,
@@ -70,15 +64,9 @@ class UserController {
     static async update(req, res) {
         try {
 
-            const updatedUser = await userService.update(req.body, req.params.id)
-
-            const user = new UserDTO({
-                id: updatedUser.id,
-                username: updatedUser.username,
-                name: updatedUser.name,
-                email: updatedUser.email
-            })
-
+            await userService.update(req.body, req.params.id)
+            const { name, username, email } = req.body
+            const user = new UserDTO(req.params.id, name, username, email)
             return jsonResponse.successResponse(
                 res,
                 200,
