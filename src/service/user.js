@@ -3,7 +3,6 @@ const { User, sequelize } = require("../models")
 const storeDTO = require("../http/request/user/storeDTO")
 const updateDTO = require("../http/request/user/updateDTO")
 const idDTO = require("../http/request/user/idDTO")
-const { where } = require("sequelize")
 
 class UserService {
 
@@ -63,12 +62,12 @@ class UserService {
 
             const hashedPassword = await bcrypt.hash(data.password, 10)
 
-            const user = User.update({
+            const user = await User.update({
                 username: data.username,
                 name: data.name,
                 email: data.email,
                 password: hashedPassword
-            }, { where: { id: id } })
+            }, { where: { id: id } });
 
             await DB.commit()
 
@@ -78,9 +77,6 @@ class UserService {
             await DB.rollback()
             throw error
         }
-
-
-
     }
 
     static async destroy(id) {
