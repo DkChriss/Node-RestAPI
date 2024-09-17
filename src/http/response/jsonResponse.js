@@ -1,7 +1,9 @@
 const successResponse = (res, code = 200, message, data = {}) => {
-    res.status(code).json({
+    return data == {} ? res.status(code).json({
         "message": message,
         "data": data
+    }) : res.status(code).json({
+        "message": message
     })
 }
 

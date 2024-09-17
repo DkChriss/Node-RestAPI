@@ -1,64 +1,104 @@
 const bcrypt = require("bcryptjs")
-const { User } = require("../models");
-const { Op, where } = require("sequelize");
+const { User, sequelize } = require("../models")
+const storeDTO = require("../http/request/user/storeDTO")
+const updateDTO = require("../http/request/user/updateDTO")
+const idDTO = require("../http/request/user/idDTO")
+const { where } = require("sequelize")
 
 class UserService {
 
-    static async store(user) {
-        const {username, name, email, password} = user
+    static async store(data) {
 
-        const hashedPassword = await bcrypt.hash(password, 10)
+        const DB = await sequelize.transaction();
 
-        const existsUser = await User.findOne({
-            where: {
-                [Op.or]: [{username}, {email}]
-            }
-        });
-        
-        if(existsUser) {
-            throw new Error('Username or email already exists')
-        } 
+        try {
 
-        return await User.create({
-            username,
-            password: hashedPassword,
-            email,
-            name
-        })
-        
+            await storeDTO.validateAsync(data, { abortEarly: false })
+
+            const hashedPassword = await bcrypt.hash(data.password, 10)
+
+            const newUser = await User.create({
+                username: data.username,
+                password: hashedPassword,
+                email: data.email,
+                name: data.name
+            })
+
+            await DB.commit()
+
+            return newUser
+
+        } catch (error) {
+            await DB.rollback();
+            throw error;
+        }
     }
 
     static async show(id) {
-        const user = await User.findByPk(id);
-        
-        if(!user) {
-            throw new Error("User not found")
+
+        try {
+            await idDTO.validateAsync({ id: id })
+
+            const user = await User.findByPk(id);
+
+            return user;
+
+        } catch (error) {
+            throw error;
         }
-        
-        return user;
+
     }
 
-    static async update(id, user) {
-        
-        const currentUser = await User.findByPk(id);
+    static async update(data, id) {
 
-        if(!currentUser) {
-            throw new Error("User not found")
+        const DB = await sequelize.transaction()
+
+        try {
+
+            data.id = id
+
+            await updateDTO.validateAsync(
+                data, { abortEarly: false }
+            )
+
+            const hashedPassword = await bcrypt.hash(data.password, 10)
+
+            const user = User.update({
+                username: data.username,
+                name: data.name,
+                email: data.email,
+                password: hashedPassword
+            }, { where: { id: id } })
+
+            await DB.commit()
+
+            return user
+
+        } catch (error) {
+            await DB.rollback()
+            throw error
         }
 
-        return await currentUser.update(user)
+
 
     }
 
     static async destroy(id) {
-        const user = await User.findByPk(id)
 
-        if(!user) {
-            throw new Error("User not found")
+        const DB = await sequelize.transaction()
+
+        try {
+
+            await idDTO.validateAsync({ id: id })
+
+            await User.destroy({ where: { id: id } })
+
+            await DB.commit()
+
+        } catch (error) {
+            await DB.rollback()
+            throw error
         }
-
-        await user.destroy()
-        
     }
 }
 

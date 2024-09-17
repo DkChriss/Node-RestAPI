@@ -1,58 +1,43 @@
-const userDTO = require("../http/request/UserDTO")
+const userDTO = require("../http/request/user/storeDTO")
 const userService = require("../service/user")
 const jsonResponse = require("../http/response/jsonResponse")
-const UserDTO = require("../http/request/UserDTO")
+const UserDTO = require("../http/request/user/storeDTO");
+const Joi = require("joi");
 
 class UserController {
 
-    static async store (req,res) {
+    static async store(req, res) {
+
         try {
-            const {error} = userDTO.validate(req.body)
-    
-            if(error) {
-                return jsonResponse.validationResponse(
-                    res, 
-                    400, 
-                    "Validation Error", 
-                    error.details[0].message
-                )
-            }
-    
-            const newUserDTO = new userDTO(req.body)
-            
-            const newUser = await userService.store(newUserDTO);
-    
-            jsonResponse.successResponse(
+
+            const newUser = await userService.store(req.body);
+
+            return jsonResponse.successResponse(
                 res,
                 201,
-                "User registered successfully",
+                "User has been registered successfully",
                 newUser
             )
-    
+
         } catch (error) {
-            jsonResponse.errorResponse(
+            return Joi.isError(error) ? jsonResponse.validationResponse(
+                res,
+                409,
+                "Validation error",
+                error.details.map(err => err.message)
+            ) : jsonResponse.errorResponse(
                 res,
                 500,
                 error.message
             )
+
         }
     }
 
-    static async show(req,res) {
+    static async show(req, res) {
         try {
 
-            const idUser = req.params.id;
-            
-            if(idUser == null) {
-                return jsonResponse.errorResponse(
-                    res,
-                    400,
-                    "Validation error",
-                    "Id is required"
-                )
-            }
-    
-            const {id, username, name, email} = await userService.show(idUser)
+            const { id, username, name, email } = await userService.show(req.params.id)
 
             const user = new UserDTO({
                 id,
@@ -61,64 +46,53 @@ class UserController {
                 email
             })
 
-            jsonResponse.successResponse(
+            return jsonResponse.successResponse(
                 res,
                 200,
                 "User exists",
                 user
             )
+
         } catch (error) {
-            jsonResponse.errorResponse(
+            return Joi.isError(error) ? jsonResponse.validationResponse(
+                res,
+                409,
+                "Validation error",
+                error.details.map(err => err.message)
+            ) : jsonResponse.errorResponse(
                 res,
                 500,
                 error.message
             )
         }
     }
-    
-    static async update(req,res){
+
+    static async update(req, res) {
         try {
 
-            const idUser = req.params.id
-
-            const {error} = userDTO.validate(req.body)
-    
-            if(error) {
-                return jsonResponse.validationResponse(
-                    res, 
-                    400, 
-                    "Validation Error", 
-                    error.details[0].message
-                )
-            }
-
-            if(idUser == null) {
-                return jsonResponse.errorResponse(
-                    res,
-                    400,
-                    "Validation error",
-                    "Id is required"
-                )
-            }
-
-            const {id, username, name, email} = await userService.update(idUser, new UserDTO(req.body))
+            const updatedUser = await userService.update(req.body, req.params.id)
 
             const user = new UserDTO({
-                id,
-                username,
-                name,
-                email
+                id: updatedUser.id,
+                username: updatedUser.username,
+                name: updatedUser.name,
+                email: updatedUser.email
             })
 
-            jsonResponse.successResponse(
+            return jsonResponse.successResponse(
                 res,
                 200,
                 "User has been updated",
                 user
             )
 
-        } catch(error) {
-            jsonResponse.errorResponse(
+        } catch (error) {
+            return Joi.isError(error) ? jsonResponse.validationResponse(
+                res,
+                409,
+                "Validation error",
+                error.details.map(err => err.message)
+            ) : jsonResponse.errorResponse(
                 res,
                 500,
                 error.message
@@ -126,21 +100,10 @@ class UserController {
         }
     }
 
-    static async destroy(req,res) {
+    static async destroy(req, res) {
         try {
 
-            const idUser = req.params.id
-
-            if(idUser == null) {
-                return jsonResponse.errorResponse(
-                    res,
-                    400,
-                    "Validation error",
-                    "Id is required"
-                )
-            }
-
-            await userService.destroy(idUser)
+            await userService.destroy(req.params.id)
 
             return jsonResponse.successResponse(
                 res,
@@ -148,12 +111,19 @@ class UserController {
                 "User has been deleted"
             )
 
-        } catch(error) {
-            jsonResponse.errorResponse(
+        } catch (error) {
+
+            return Joi.isError(error) ? jsonResponse.validationResponse(
+                res,
+                409,
+                "Validation error",
+                error.details.map(err => err.message)
+            ) : jsonResponse.errorResponse(
                 res,
                 500,
                 error.message
             )
+
         }
     }
 
