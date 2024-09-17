@@ -1,5 +1,6 @@
 const Joi = require("joi")
 const { Category } = require("../../../models");
+const { Op } = require("sequelize");
 
 const categoryDTO = Joi.object({
     id: Joi.number().required().external(async (id) => {
@@ -17,10 +18,16 @@ const categoryDTO = Joi.object({
         'any.required': 'ID is required'
     }),
     name: Joi.string().required().external(
-        async (name) => {
-            const existsName = await Category.findOne({ where: { name: name } })
+        async (name, helpers) => {
+            const id = helpers?.state?.ancestors?.[0]?.id;
+            const existsName = await Category.findOne({
+                where: {
+                    name: name,
+                    id: id ? { [Op.ne]: id } : undefine
+                }
+            })
             if (existsName) {
-                throw new joi.ValidationError("Name is already taken", [{
+                throw new Joi.ValidationError("Name is already taken", [{
                     message: "Name is already taken",
                     path: ["name"],
                     type: "unique.name",
