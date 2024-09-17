@@ -1,5 +1,6 @@
 const successResponse = (res, code = 200, message, data = {}) => {
-    return data == {} ? res.status(code).json({
+
+    return Object.keys(data).length != 0 ? res.status(code).json({
         "message": message,
         "data": data
     }) : res.status(code).json({
